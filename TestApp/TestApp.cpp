@@ -9,7 +9,7 @@
 const double PI = 3.14159;
 
 double toRad(double deg) {
-    return (deg * 180.0 / PI);
+    return (deg * PI / 180.0);
 }
 
 
@@ -43,16 +43,16 @@ const double TIRE_ANGLE = toRad(0);
 const double WHEEL_RADIUS = 0.05; // 5 cm
 const double RPM_MAX_POWER = 1000;
 
-//const Position LF_POSITION = Position(-0.1, 0.1, toRad(45));
-//const Position RF_POSITION = Position(0.1, 0.1, -toRad(45));
-//const Position LR_POSITION = Position(-0.1, -0.1, toRad(45));
-//const Position RR_POSITION = Position(0.1, -0.1, -toRad(45));
+const Position LF_POSITION = Position(-0.1, 0.1, toRad(45));
+const Position RF_POSITION = Position(0.1, 0.1, -toRad(45));
+const Position LR_POSITION = Position(-0.1, -0.1, -toRad(45));
+const Position RR_POSITION = Position(0.1, -0.1, toRad(45));
 
 // Straight Wheel Drive
-const Position LF_POSITION = Position(-0.1, 0.1, toRad(0));
-const Position RF_POSITION = Position(0.1, 0.1, toRad(0));
-const Position LR_POSITION = Position(-0.1, -0.1, toRad(0));
-const Position RR_POSITION = Position(0.1, -0.1, toRad(0));
+//const Position LF_POSITION = Position(-0.1, 0.1, toRad(0));
+//const Position RF_POSITION = Position(0.1, 0.1, toRad(0));
+//const Position LR_POSITION = Position(-0.1, -0.1, toRad(0));
+//const Position RR_POSITION = Position(0.1, -0.1, toRad(0));
 
 
 
@@ -71,18 +71,18 @@ double powerToRev(double power, double dt) {
 
 Position computeMovement(double lfPower, double rfPower, double lrPower, double rrPower, Position curPos, double dt) {
 
-    // Summate the forces
+    // Summate the forces in local coordinates
     double lfX = lfPower * cos(LF_POSITION.h);
     double lfY = lfPower * sin(LF_POSITION.h);
 
     double rfX = rfPower * cos(RF_POSITION.h);
     double rfY = rfPower * sin(RF_POSITION.h);
 
-    double lrX = lrPower * cos(LF_POSITION.h);
-    double lrY = lrPower * sin(LF_POSITION.h);
+    double lrX = lrPower * cos(LR_POSITION.h);
+    double lrY = lrPower * sin(LR_POSITION.h);
 
-    double rrX = rrPower * cos(RF_POSITION.h);
-    double rrY = rrPower * sin(RF_POSITION.h);
+    double rrX = rrPower * cos(RR_POSITION.h);
+    double rrY = rrPower * sin(RR_POSITION.h);
 
     double totalForceX = lfX + rfX + lrX + rrX;
     double totalForceY = lfY + rfY + lrY + rrY;
@@ -94,22 +94,31 @@ Position computeMovement(double lfPower, double rfPower, double lrPower, double 
     double rrMoment = rrX * RR_POSITION.x + rrY * RR_POSITION.y;
     double totalMoment = lfMoment + rfMoment + lrMoment + rrMoment;
 
+ 
    
     // Convert force to distace
     // TO DO
     Position  newPos;
 
-    double factor = 0.01;  // FIXME
+    double factor = 1.0;  // FIXME
+    double momentFactor = 7500000;
 
-    newPos.h = curPos.h + totalMoment * dt;
-
-    // FIXME use the heading to put this back in world coordinates and use the total force
-    // not the 
-
-    newPos.x = curPos.x + factor * totalForceX + dt;
-    newPos.y = curPos.y + factor * totalForceY * dt;
+    newPos.h = curPos.h + totalMoment * momentFactor * dt;
 
 
+    double localX = totalForceX * factor * dt;
+    double localY = totalForceY * factor * dt;
+
+
+
+    double cosH = cos(newPos.h);
+    double sinH = sin(newPos.h);
+
+    
+    newPos.x = curPos.x + (localX * cos(newPos.h) - localY * sin(newPos.h));
+    newPos.y = curPos.y + (localY * cos(newPos.h) + localX * sin(newPos.h));
+            
+    
     return newPos;
 
 }
@@ -127,13 +136,25 @@ int main()
 {
 
     // All forward
+    // Forward
     computeMovement(1.0, 1.0, 1.0, 1.0, Position(0, 0, 0), 0.1);
+
+    // Face and Drive Left
+//    computeMovement(1.0, 1.0, 1.0, 1.0, Position(0, 0, toRad(-90)), 0.1);
+
+    // Face and Drive Right
+//    computeMovement(1.0, 1.0, 1.0, 1.0, Position(0, 0, toRad(90)), 0.1);
+
+    // Face and Drive Backward
+//    computeMovement(1.0, 1.0, 1.0, 1.0, Position(0, 0, toRad(180)), 0.1);
+
+
+
+    // Strafe
+    computeMovement(1.0, -1.0, -1.0, 1.0, Position(0, 0, 0), 0.1);
 
     // Spin
     computeMovement(1.0, -1.0, 1.0, -1.0, Position(0, 0, 0), 0.1);
-
-    // Strafe
-    computeMovement(-1.0, -1.0, 1.0, 1.0, Position(0, 0, 0), 0.1);
 
     // One Side
     computeMovement(1.0, 0.0, 1.0, 0.0, Position(0, 0, 0), 0.1);
@@ -145,6 +166,8 @@ int main()
 
     std::cout << std::fixed << std::setprecision(3);
 
+    
+
     // All motors for 2 seconds
     std::cout << "--- FORWARD ---" << std::endl;
     while( t < 2.0) {
@@ -154,9 +177,19 @@ int main()
 
     }
 
+    // Strafe for 2 seconds
+    std::cout << "--- STRAFE ---" << std::endl;
+    while (t < 4.0) {
+        pos = computeMovement(1.0, -1.0, -1.0, 1.0, pos, dt);
+        t += dt;
+        std::cout << "Time: " << t << " Pos: " << pos << std::endl;
+
+    }
+
+
     // Spin for 2 second
     std::cout << "--- SPIN ---" << std::endl;
-   while (t < 4.0) {
+   while (t < 6.0) {
         pos = computeMovement(1.0, -1.0, 1.0, -1.0, pos, dt);
         t += dt;
         std::cout << "Time: " << t << " Pos: " << pos << std::endl;
@@ -166,7 +199,7 @@ int main()
   
     // Back for 2 seconds
     std::cout << "--- BACK ---" << std::endl;
-    while (t < 6.0) {
+    while (t < 8.0) {
         pos = computeMovement(-1.0, -1.0, -1.0, -1.0, pos, dt);
         t += dt;
         std::cout << "Time: " << t << " Pos: " << pos << std::endl;
