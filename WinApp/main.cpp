@@ -5,6 +5,10 @@
 #include "basewin.h"
 #include "simulator.h"
 
+#include "spline.h"
+
+#include <vector>
+
 
 const float MAX_WORLD_X = 10.0; // 10.0 m
 
@@ -17,12 +21,14 @@ template <class T> void SafeRelease(T **ppT)
     }
 }
 
+const int NUM_SAMPLES = 30;
+
 class MainWindow : public BaseWindow<MainWindow>
 {
+    
     ID2D1Factory            *pFactory;
     ID2D1HwndRenderTarget   *pRenderTarget;
     ID2D1SolidColorBrush    *pBrush;
-    D2D1_ELLIPSE            ellipse;
 
     void    CalculateLayout();
     HRESULT CreateGraphicsResources();
@@ -44,14 +50,6 @@ public:
 
 void MainWindow::CalculateLayout()
 {
-    if (pRenderTarget != NULL)
-    {
-        D2D1_SIZE_F size = pRenderTarget->GetSize();
-        const float x = size.width / 2;
-        const float y = size.height / 2;
-        const float radius = min(x, y);
-        ellipse = D2D1::Ellipse(D2D1::Point2F(x, y), radius, radius);
-    }
 }
 
 HRESULT MainWindow::CreateGraphicsResources()
@@ -88,6 +86,23 @@ void MainWindow::DiscardGraphicsResources()
     SafeRelease(&pRenderTarget);
     SafeRelease(&pBrush);
 }
+
+
+
+// t is a value that goes from 0 to 1 to interpolate in a C1 continuous way across uniformly sampled data points.
+// when t is 0, this will return B.  When t is 1, this will return C.
+float CubicHermite(float A, float B, float C, float D, float t)
+{
+    float a = -A / 2.0f + (3.0f * B) / 2.0f - (3.0f * C) / 2.0f + D / 2.0f;
+    float b = A - (5.0f * B) / 2.0f + 2.0f * C - D / 2.0f;
+    float c = -A / 2.0f + C / 2.0f;
+    float d = B;
+
+    return a * t * t * t + b * t * t + c * t + d;
+}
+
+
+
 
 void MainWindow::OnPaint()
 {
@@ -134,6 +149,40 @@ void MainWindow::OnPaint()
         );
 
 
+        /*  TEST SPLINE DRAWING CODE*/
+        /*
+        double x1 = 100;
+        double x2 = 300;
+        double x3 = 800;
+        double x4 = 1000;
+        
+        double y1 = 100;
+        double y2 = 100;
+        double y3 = 400;
+        double y4 = 400;
+
+        Spline sp(x1, y1, x2, y2, x3, y3, x4, y4);
+               
+        int num_circles = 100;
+
+        for (int i = 0; i < num_circles; ++i)
+        {
+            double t = i * 1.0 / num_circles;
+
+            double x = sp.getX(t);
+            double y = sp.getY(t);
+  
+            float radius = 2;
+
+            D2D1_ELLIPSE ellipse = D2D1::Ellipse(D2D1::Point2F(x, y), radius, radius);
+
+            pRenderTarget->FillEllipse(ellipse, pBrush);
+
+        }
+            */
+        
+
+
         float robotX = pos.x * metersToPixels;
         float robotY = pos.y * metersToPixels;
 
@@ -147,7 +196,6 @@ void MainWindow::OnPaint()
 
         // Draw the transformed rectangle.
         pRenderTarget->DrawRectangle(rectangle,pBrush);
-
 
 
         hr = pRenderTarget->EndDraw();

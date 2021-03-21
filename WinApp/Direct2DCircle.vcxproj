@@ -181,6 +181,7 @@
   <ItemGroup>
     <ClInclude Include="basewin.h" />
     <ClInclude Include="simulator.h" />
+    <ClInclude Include="spline.h" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="DeclareDPIAware.manifest" />
