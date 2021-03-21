@@ -176,10 +176,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="motion_profile.cpp" />
     <ClCompile Include="simulator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basewin.h" />
+    <ClInclude Include="motion_profile.h" />
     <ClInclude Include="simulator.h" />
     <ClInclude Include="spline.h" />
   </ItemGroup>

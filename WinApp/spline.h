@@ -5,12 +5,6 @@
 const int NUM_OF_SPLINE_POINTS = 100;
 
 
-double getBezierPoint(double n1, double n2, double perc)
-{
-    double diff = n2 - n1;
-
-    return n1 + (diff * perc);
-}
 
 
 class Spline {
@@ -19,6 +13,13 @@ private:
 
 	std::vector<double> splinePointsX;
 	std::vector<double> splinePointsY;
+
+    double getBezierPoint(double n1, double n2, double perc)
+    {
+        double diff = n2 - n1;
+
+        return n1 + (diff * perc);
+    }
 
 public:
 
@@ -62,15 +63,41 @@ public:
 	}
 
     double getX(double t) {
-        int index = t * NUM_OF_SPLINE_POINTS;
+        int index = (int)fmin(t * NUM_OF_SPLINE_POINTS, splinePointsX.size()-1);
         return this->splinePointsX[index];
 
     }
 
     double getY(double t) {
-        int index = t * NUM_OF_SPLINE_POINTS;
+        int index = (int)fmin(t * NUM_OF_SPLINE_POINTS, splinePointsY.size() - 1);
         return this->splinePointsY[index];
     }
+
+    double getH(double t) {
+        int index = (int)(t * NUM_OF_SPLINE_POINTS);
+
+        if (index >= (NUM_OF_SPLINE_POINTS - 1)) {
+            index = NUM_OF_SPLINE_POINTS - 2;
+        }
+
+        double theta = atan2(splinePointsY[index + 1] - splinePointsY[index], splinePointsX[index + 1] - splinePointsX[index]);
+
+        return theta;
+
+
+    }
+
+    double getDistance() {
+        double d = 0.0;
+        for (int i = 1; i < splinePointsX.size(); ++i) {
+            d += sqrt((splinePointsX[i] - splinePointsX[i - 1]) * (splinePointsX[i] - splinePointsX[i - 1]) + (splinePointsX[i] - splinePointsX[i - 1]));
+        }
+        return d;
+    }
+
+
+//        
+        //return this->splinePointsY[index];
 
 
 

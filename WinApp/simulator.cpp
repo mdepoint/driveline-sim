@@ -5,8 +5,12 @@
 
 #include <iostream>
 #include <iomanip>
+#include <cmath>
 
 #include "simulator.h"
+#include "spline.h"
+
+#include "motion_profile.h"
 
 const double PI = 3.14159;
 
@@ -128,15 +132,66 @@ int stage = 0;
 
 
 
+double x1 = 1.0;
+double x2 = 2.0;
+double x3 = 8.0;
+double x4 = 9.0;
+
+double y11 = 0.5;
+double y2 = 0.5;
+double y3 = 4.0;
+double y4 = 4.0;
+
+Spline sp(x1, y11, x2, y2, x3, y3, x4, y4);
 
 
-
-
+//double splineDistance = sp.getDistance();
 
 
 
 void run_sim()
 {
+
+    /*
+
+    double total_time = 10.0;
+
+    double t = fmin(sim_time / total_time, 1.0);
+
+
+
+    double x = sp.getX(t);
+    double y = sp.getY(t);
+
+    pos.h = sp.getH(t);
+
+
+    if ( sim_time )
+
+
+
+    double v = 0.7;
+
+    
+    if (sim_time < 8.0) {
+
+    }
+
+    pos = computeMovement(1.0, 1.0, 1.0, 1.0, pos, 0.1)
+
+    */
+
+
+
+
+
+    
+    mp::move_forward_temporary(sim_time, sp);
+
+    sim_time += 0.1;
+    return;
+
+
 
     double rel_time = 0.0;
 
@@ -198,6 +253,9 @@ Position get_position() {
     return pos;
 }
 
+void set_position(Position p) {
+    pos = p;
+}
 
 
 
@@ -294,7 +352,7 @@ int main()
 
 
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
+// Run program: Ctrl + F5 or Debug > Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
 
 // Tips for Getting Started: 

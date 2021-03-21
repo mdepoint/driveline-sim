@@ -21,4 +21,6 @@ struct Position {
 
 extern void run_sim();
 extern Position get_position();
+void set_position(Position p);
 extern double toDegrees(double rad);
+extern Position computeMovement(double lfPower, double rfPower, double lrPower, double rrPower, Position curPos, double dt);
