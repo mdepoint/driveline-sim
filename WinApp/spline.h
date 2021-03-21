@@ -90,7 +90,7 @@ public:
     double getDistance() {
         double d = 0.0;
         for (int i = 1; i < splinePointsX.size(); ++i) {
-            d += sqrt((splinePointsX[i] - splinePointsX[i - 1]) * (splinePointsX[i] - splinePointsX[i - 1]) + (splinePointsX[i] - splinePointsX[i - 1]));
+            d += sqrt((splinePointsX[i] - splinePointsX[i - 1]) * (splinePointsX[i] - splinePointsX[i - 1]) + (splinePointsY[i] - splinePointsY[i - 1])* (splinePointsY[i] - splinePointsY[i - 1]));
         }
         return d;
     }
